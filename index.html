@@ -7,6 +7,11 @@
     <link rel="manifest" href="manifest.json">
     <title>ARK Breeding Professional UI</title>
     <style>
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
         :root {
             --bg: #0f0f12;
             --surface: #1e1e24;
@@ -25,6 +30,9 @@
             color: #e0e0e0; 
             margin: 0; 
             display: flex;
+            width: 100%;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         /* БІЧНЕ МЕНЮ (SIDEBAR) */
@@ -59,9 +67,9 @@
         .add-type-btn {
             background: var(--accent);
             border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -69,7 +77,7 @@
             transition: 0.2s;
         }
         .add-type-btn:hover { transform: scale(1.1); }
-        .add-type-btn svg { width: 20px; height: 20px; fill: #000; }
+        .add-type-btn svg { width: 26px; height: 26px; fill: #000; }
 
         .dino-list {
             flex: 1;
@@ -82,6 +90,50 @@
 
         .dino-list::-webkit-scrollbar {
             display: none; /* WebKit (Chrome, Safari, Edge) */
+        }
+
+        .sidebar-footer {
+            padding: 0 15px 15px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-tool-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sidebar-tool-btn {
+            flex: 1;
+            min-height: 42px;
+            border: none;
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: #fff;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s, color 0.2s;
+        }
+
+        .sidebar-tool-btn:hover {
+            transform: translateY(-1px);
+            background: #363640;
+        }
+
+        .sidebar-tool-btn.primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .sidebar-tool-btn.primary:hover {
+            background: #ffc96f;
+        }
+
+        .sidebar-import-input {
+            display: none;
         }
 
         .dino-item {
@@ -97,7 +149,7 @@
             box-sizing: border-box; /* Дозволяє рамці не змінювати внутрішні розміри */
         }
         .dino-item.selected {
-            border: 0.25rem solid var(--accent); /* Orange border */
+            border: 0.15rem solid var(--accent); /* Orange border */
             /* Паддінг тепер не потрібно змінювати вручну завдяки box-sizing */
         }
         .dino-item:hover { background: #363640; }
@@ -154,9 +206,7 @@
         }
         .action-btn svg { width: 18px; height: 18px; fill: #777; }
         
-        .btn-fav:hover svg { fill: #fdd835; }
         .btn-edit:hover svg { fill: var(--accent); }
-        .btn-del-type:hover svg { fill: var(--delete); }
 
         .btn-modal-fav {
             width: 48px; height: 48px;
@@ -195,6 +245,7 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+            justify-content: space-between;
         }
 
         .content-header h2 { font-size: 2rem; font-weight: 900; margin: 0; text-transform: uppercase; color: #fff; }
@@ -246,14 +297,46 @@
         .creature-card:hover { border-color: var(--accent); z-index: 10; }
 
         /* Стилі підсвічування зв'язків */
-        .creature-card.highlight-mother { border-color: var(--female) !important; box-shadow: 0 0 15px rgba(245, 61, 134, 0.3); z-index: 5; }
-        .creature-card.highlight-father { border-color: var(--male) !important; box-shadow: 0 0 15px rgba(61, 134, 245, 0.3); z-index: 5; }
-        .creature-card.highlight-child { border-color: var(--mut-bg) !important; z-index: 5; }
+        .creature-card.is-selected {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 1px rgba(255, 183, 77, 0.95), 0 0 15px rgba(255, 183, 77, 0.35), 0 0 15px rgba(255, 183, 77, 0.14);
+            z-index: 14;
+        }
+        .creature-card.highlight-mother {
+            border-color: var(--female) !important;
+            box-shadow: 0 0 0 1px rgba(245, 61, 134, 0.9), 0 0 15px rgba(245, 61, 134, 0.35), 0 0 15cqh rgba(245, 61, 134, 0.12);
+            z-index: 10;
+        }
+        .creature-card.highlight-father {
+            border-color: var(--male) !important;
+            box-shadow: 0 0 0 1px rgba(61, 134, 245, 0.9), 0 0 15px rgba(61, 134, 245, 0.35), 0 0 15px rgba(61, 134, 245, 0.12);
+            z-index: 10;
+        }
+        .creature-card.highlight-child {
+            border-color: var(--mut-bg) !important;
+            box-shadow: 0 0 0 1px rgba(46, 199, 51, 0.915), 0 0 15px rgba(76, 175, 80, 0.28);
+            z-index: 10;
+        }
         
         .parent-link { cursor: pointer; transition: 0.2s; }
         .parent-link:hover { color: #fff; text-decoration: underline; }
 
-        .card-gender-strip { position: absolute; top: 0; left: 0; width: 12px; height: 100%; }
+        .card-gender-strip {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 4px;
+            box-sizing: border-box;
+            pointer-events: none;
+            mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            -webkit-mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
         .card-name { 
             font-weight: 900; 
             font-size: 1.1rem; 
@@ -298,7 +381,7 @@
 
         .card-actions-vertical {
             position: absolute;
-            top: 5px; 
+            top: 10px; 
             right: 12px; /* Offset from right edge as requested */
             display: flex;
             flex-direction: column;
@@ -437,13 +520,117 @@
         
         .stat-input::-webkit-outer-spin-button,
         .stat-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .stat-input[type=number] { -moz-appearance: textfield; }
+        .stat-input[type=number] { appearance: textfield; -moz-appearance: textfield; }
 
         .actions-row { display: flex; gap: 0.6rem; }
         .btn-save { flex: 2; min-height: 42px; background: var(--accent); color: #000; border: none; border-radius: 1.2rem; font-weight: 900; cursor: pointer; }
         .btn-del { flex: 1; min-height: 42px; background: var(--delete); color: #000; border: none; border-radius: 1.2rem; font-weight: 900; cursor: pointer; }
 
         .fab-add { position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; background: var(--accent); border-radius: 22px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+
+        .mobile-back-btn {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 0 14px;
+            border: none;
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: #fff;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        @media (max-width: 767px) {
+            body.mobile-phone {
+                display: block;
+                overflow: hidden;
+                height: 100dvh;
+            }
+
+            body.mobile-phone .sidebar {
+                width: 100%;
+                min-width: 0;
+                height: 100dvh;
+                position: fixed;
+                inset: 0;
+                z-index: 20;
+            }
+
+            body.mobile-phone .main-content {
+                margin-left: 0;
+                padding: 1rem;
+                width: 100%;
+                height: 100dvh;
+                box-sizing: border-box;
+                display: none;
+                position: fixed;
+                inset: 0;
+                overflow-y: auto;
+                z-index: 30;
+                background: var(--bg);
+            }
+
+            body.mobile-phone.mobile-card-view .sidebar {
+                display: none;
+            }
+
+            body.mobile-phone.mobile-card-view .main-content {
+                display: flex;
+                flex-direction: column;
+            }
+
+            body.mobile-phone.mobile-card-view #activeContent {
+                display: block !important;
+            }
+
+            body.mobile-phone.mobile-card-view #emptyState {
+                display: none !important;
+            }
+
+            body.mobile-phone .content-header {
+                margin-bottom: 1rem;
+            }
+
+            body.mobile-phone .content-header h2 {
+                font-size: 1.4rem;
+            }
+
+            body.mobile-phone .mobile-back-btn {
+                display: inline-flex;
+            }
+
+            body.mobile-phone .creatures-grid {
+                gap: 1rem;
+                padding-top: 0.5rem;
+            }
+
+            body.mobile-phone .generation-row {
+                gap: 0.75rem;
+                padding: 1.25rem 0;
+            }
+
+            body.mobile-phone .creature-card {
+                width: calc((100% - 0.75rem) / 2);
+                max-width: calc((100% - 0.75rem) / 2);
+                padding: calc(1rem - 2px) calc(2.2rem - 2px) calc(1rem - 2px) calc(1rem - 2px);
+            }
+
+            body.mobile-phone .card-actions-vertical {
+                right: 8px;
+                gap: 4px;
+            }
+
+            body.mobile-phone .card-edit-btn {
+                padding: 7px;
+            }
+
+            body.mobile-phone .fab-add {
+                right: 16px;
+                bottom: 16px;
+            }
+        }
 
     </style>
 </head>
@@ -466,6 +653,13 @@
                style="font-size: 0.9rem; border-bottom: 1px solid var(--accent); border-radius: 0; padding-bottom: 5px;">
     </div>
     <div class="dino-list" id="dinoList"></div>
+    <div class="sidebar-footer">
+        <div class="sidebar-tool-row">
+            <button class="sidebar-tool-btn" onclick="exportData()">Export</button>
+            <button class="sidebar-tool-btn primary" onclick="document.getElementById('sidebarImportInput').click()">Import</button>
+        </div>
+        <input id="sidebarImportInput" class="sidebar-import-input" type="file" accept="application/json,.json">
+    </div>
 </div>
 
 <div class="main-content">
@@ -474,7 +668,10 @@
     </div>
     
     <div id="activeContent" style="display: none;">
-        <div class="content-header"><h2 id="selectedTypeName">Rex</h2></div>
+        <div class="content-header">
+            <button type="button" class="mobile-back-btn" onclick="showMobileMenu()">Back</button>
+            <h2 id="selectedTypeName">Rex</h2>
+        </div>
         <div class="creatures-grid" id="creaturesGrid"></div>
     </div>
 
@@ -568,28 +765,177 @@
 <script>
     // ДАНІ
     const STORAGE_KEY = 'ark_breeding_pro_v1';
-    let selectedDinoIndex = -1;
-    let editingIdx = -1; // -1 = створення, інакше = індекс редагування
-    let editingCreatureIdx = -1; // Індекс особини для редагування
+    let selectedDinoId = null;
+    let selectedCreatureId = null;
+    let previewCreatureId = null;
+    let editingTypeId = null; // null = створення, інакше = ID редагування
+    let editingCreatureId = null; // ID особини для редагування
 
     let dinoTypes = [];
 
     // ФУНКЦІЇ ЗБЕРЕЖЕННЯ
     function saveToStorage() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(dinoTypes));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            selectedDinoId,
+            dinoTypes
+        }));
+    }
+
+    function getDinoTypeById(typeId) {
+        return dinoTypes.find(type => type.id == typeId) || null;
+    }
+
+    function getDinoTypeIndexById(typeId) {
+        return dinoTypes.findIndex(type => type.id == typeId);
+    }
+
+    function getNextDinoTypeId() {
+        return dinoTypes.reduce((maxId, type) => {
+            const typeId = Number(type.id);
+            return Number.isFinite(typeId) && typeId > maxId ? typeId : maxId;
+        }, 0) + 1;
+    }
+
+    function getCreatureById(type, creatureId) {
+        return type.creatures.find(creature => creature.id == creatureId) || null;
+    }
+
+    function getNextCreatureId(type) {
+        return type.creatures.reduce((maxId, creature) => {
+            const creatureId = Number(creature.id);
+            return Number.isFinite(creatureId) && creatureId > maxId ? creatureId : maxId;
+        }, 0) + 1;
+    }
+
+    function normalizeCreature(creature, fallbackId) {
+        const normalizedId = Number.isFinite(Number(creature?.id)) ? Number(creature.id) : fallbackId;
+        return {
+            id: normalizedId,
+            name: creature?.name || 'Unnamed',
+            motherId: creature?.motherId || null,
+            fatherId: creature?.fatherId || null,
+            gender: creature?.gender === 'F' ? 'F' : 'M',
+            mut: !!creature?.mut,
+            stats: {
+                hp: creature?.stats?.hp ?? '',
+                st: creature?.stats?.st ?? '',
+                ox: creature?.stats?.ox ?? '',
+                fd: creature?.stats?.fd ?? '',
+                wt: creature?.stats?.wt ?? '',
+                ml: creature?.stats?.ml ?? ''
+            },
+            muts: {
+                hp: creature?.muts?.hp ?? '',
+                st: creature?.muts?.st ?? '',
+                ox: creature?.muts?.ox ?? '',
+                fd: creature?.muts?.fd ?? '',
+                wt: creature?.muts?.wt ?? '',
+                ml: creature?.muts?.ml ?? ''
+            }
+        };
+    }
+
+    function normalizeDinoType(type) {
+        const normalizedType = {
+            id: Number.isFinite(Number(type?.id)) ? Number(type.id) : null,
+            name: type?.name || 'Unnamed',
+            favorite: !!type?.favorite,
+            creatures: []
+        };
+        const creatures = Array.isArray(type?.creatures) ? type.creatures : [];
+        let nextCreatureId = 1;
+        const usedCreatureIds = new Set();
+
+        creatures.forEach(creature => {
+            let creatureId = Number.isFinite(Number(creature?.id)) ? Number(creature.id) : nextCreatureId;
+            while (usedCreatureIds.has(creatureId)) {
+                creatureId += 1;
+            }
+            usedCreatureIds.add(creatureId);
+            nextCreatureId = Math.max(nextCreatureId, creatureId + 1);
+            normalizedType.creatures.push(normalizeCreature({ ...creature, id: creatureId }, creatureId));
+        });
+
+        return normalizedType;
+    }
+
+    function normalizeDinoTypes(types) {
+        const normalizedTypes = [];
+        const usedTypeIds = new Set();
+        let nextTypeId = 1;
+
+        (Array.isArray(types) ? types : []).forEach(type => {
+            let typeId = Number.isFinite(Number(type?.id)) ? Number(type.id) : nextTypeId;
+            while (usedTypeIds.has(typeId)) {
+                typeId += 1;
+            }
+            usedTypeIds.add(typeId);
+            nextTypeId = Math.max(nextTypeId, typeId + 1);
+            normalizedTypes.push(normalizeDinoType({ ...type, id: typeId }));
+        });
+
+        return normalizedTypes;
     }
 
     function loadFromStorage() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-            dinoTypes = JSON.parse(saved);
+            try {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) {
+                    dinoTypes = normalizeDinoTypes(parsed);
+                } else {
+                    dinoTypes = normalizeDinoTypes(parsed?.dinoTypes);
+                    selectedDinoId = Number.isFinite(Number(parsed?.selectedDinoId)) ? Number(parsed.selectedDinoId) : null;
+                }
+            } catch (error) {
+                dinoTypes = [];
+            }
         } else {
             // Початкові дані, якщо сховище порожнє
             dinoTypes = [
-                { name: "Rex", favorite: true, creatures: [] },
-                { name: "Argy", favorite: false, creatures: [] }
+                { id: 1, name: "Rex", favorite: true, creatures: [] },
+                { id: 2, name: "Argy", favorite: false, creatures: [] }
             ];
         }
+
+        dinoTypes = normalizeDinoTypes(dinoTypes);
+        if (selectedDinoId !== null && !getDinoTypeById(selectedDinoId)) {
+            selectedDinoId = null;
+        }
+        if (selectedDinoId === null) {
+            selectedDinoId = dinoTypes[0]?.id ?? null;
+        }
+    }
+
+    function isMobilePhoneLayout() {
+        return window.matchMedia('(max-width: 767px)').matches;
+    }
+
+    function syncMobileLayout() {
+        document.body.classList.toggle('mobile-phone', isMobilePhoneLayout());
+        if (!isMobilePhoneLayout()) {
+            document.body.classList.remove('mobile-menu-view', 'mobile-card-view');
+            return;
+        }
+
+        if (!document.body.classList.contains('mobile-menu-view') && !document.body.classList.contains('mobile-card-view')) {
+            document.body.classList.add('mobile-menu-view');
+        }
+    }
+
+    function showMobileMenu() {
+        if (!isMobilePhoneLayout()) return;
+        document.body.classList.remove('mobile-card-view');
+        document.body.classList.add('mobile-menu-view');
+        renderDinoList();
+    }
+
+    function showMobileCards() {
+        if (!isMobilePhoneLayout()) return;
+        document.body.classList.remove('mobile-menu-view');
+        document.body.classList.add('mobile-card-view');
+        renderCreatures();
     }
 
     // ДОПОМІЖНІ ФУНКЦІЇ ОБЧИСЛЕННЯ
@@ -608,16 +954,24 @@
         return `${basePart}<span style="opacity: 0.5; margin: 0 4px; color: #aaa;">|</span><span style="color:var(--mut-bg)">${mut || 0}</span>`;
     };
 
+    const getGenderStripStyle = (gender) => {
+        if (gender === 'M') {
+            return 'background: linear-gradient(135deg, rgba(61, 134, 245, 0.95) 0%, rgba(61, 134, 245, 0.72) 48%, rgba(61, 134, 245, 0.2) 100%); filter: drop-shadow(0 0 10px rgba(61, 134, 245, 0.18));';
+        }
+
+        return 'background: linear-gradient(135deg, rgba(245, 61, 134, 0.95) 0%, rgba(245, 61, 134, 0.72) 48%, rgba(245, 61, 134, 0.2) 100%); filter: drop-shadow(0 0 10px rgba(245, 61, 134, 0.18));';
+    };
+
     // ВІДОБРАЖЕННЯ СПИСКУ
     function renderDinoList() {
+        syncMobileLayout();
         const listElement = document.getElementById('dinoList');
         const searchQuery = document.getElementById('searchInput').value.toLowerCase();
         
         // 1. ЗАФІКСУВАТИ ПОЗИЦІЇ (FIRST)
         const positions = new Map();
         Array.from(listElement.children).forEach(el => {
-            const name = el.querySelector('.dino-name').innerText;
-            positions.set(name, el.getBoundingClientRect().top);
+            positions.set(el.dataset.id, el.getBoundingClientRect().top);
         });
         
         listElement.innerHTML = '';
@@ -631,10 +985,10 @@
         });
 
         filteredList.forEach((dino) => {
-            const realIdx = dinoTypes.indexOf(dino);
+            const typeId = dino.id;
             const item = document.createElement('div');
-            item.className = `dino-item${realIdx === selectedDinoIndex ? ' selected' : ''}${dino.favorite ? ' is-favorite' : ''}`;
-            item.dataset.idx = realIdx; // Додаємо індекс для пошуку елемента при видаленні
+            item.className = `dino-item${typeId == selectedDinoId ? ' selected' : ''}${dino.favorite ? ' is-favorite' : ''}`;
+            item.dataset.id = typeId; // Додаємо ID для стабільного пошуку елемента при видаленні
             
             const starIcon = dino.favorite 
                 ? `<svg class="fav-star" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>` 
@@ -643,7 +997,7 @@
             item.innerHTML = `
                 <span class="dino-name">${starIcon}<span class="dino-name-text">${dino.name}</span></span>
                 <div class="dino-actions">
-                    <button class="action-btn btn-edit" onclick="openTypeModal(${realIdx})" title="Edit Name">
+                    <button class="action-btn btn-edit" onclick="openTypeModal(${typeId})" title="Edit Name">
                         <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                     </button>
                 </div>
@@ -652,7 +1006,7 @@
             item.onclick = (e) => {
                 // Не змінюємо вибір, якщо натиснуто кнопку дії (fav/edit/del)
                 if (e.target.closest('.action-btn')) return;
-                selectDinoType(realIdx);
+                selectDinoType(typeId);
             };
             listElement.appendChild(item);
         });
@@ -660,8 +1014,7 @@
         // 2. АНІМАЦІЯ ПЕРЕМІЩЕННЯ (LAST, INVERT, PLAY)
         requestAnimationFrame(() => {
             Array.from(listElement.children).forEach(el => {
-                const name = el.querySelector('.dino-name').innerText;
-                const oldTop = positions.get(name);
+                const oldTop = positions.get(el.dataset.id);
                 
                 if (oldTop !== undefined) {
                     const newTop = el.getBoundingClientRect().top;
@@ -686,25 +1039,44 @@
         renderCreatures();
     }
 
-    function selectDinoType(idx) {
-        selectedDinoIndex = idx;
+    function selectDinoType(typeId) {
+        const type = getDinoTypeById(typeId);
+        if (!type) return;
+        selectedDinoId = type.id;
+        selectedCreatureId = null;
+        previewCreatureId = null;
+        if (isMobilePhoneLayout()) {
+            showMobileCards();
+            return;
+        }
         renderDinoList();
     }
 
     function renderCreatures() {
+        syncMobileLayout();
         const empty = document.getElementById('emptyState');
         const active = document.getElementById('activeContent');
         const fab = document.getElementById('fabAdd');
         const grid = document.getElementById('creaturesGrid');
 
-        if (selectedDinoIndex === -1) {
-            empty.style.display = 'flex';
+        if (isMobilePhoneLayout() && document.body.classList.contains('mobile-menu-view')) {
+            empty.style.display = 'none';
             active.style.display = 'none';
             fab.style.display = 'none';
             return;
         }
 
-        const type = dinoTypes[selectedDinoIndex];
+        let type = getDinoTypeById(selectedDinoId);
+        if (!type) {
+            selectedDinoId = dinoTypes[0]?.id ?? null;
+            type = getDinoTypeById(selectedDinoId);
+        }
+        if (!type) {
+            empty.style.display = 'flex';
+            active.style.display = 'none';
+            fab.style.display = 'none';
+            return;
+        }
         empty.style.display = 'none';
         active.style.display = 'block';
         fab.style.display = 'flex'; // Кнопка "+" тепер з'являється
@@ -712,14 +1084,20 @@
 
         // 1. Розрахунок поколінь
         const creatureLevels = {};
-        function getCreatureLevel(cId) {
+        function getCreatureLevel(cId, stack = new Set()) {
             if (!cId) return 0;
             if (creatureLevels[cId] !== undefined) return creatureLevels[cId];
-            const c = type.creatures.find(x => x.id == cId);
-            if (!c || (!c.motherId && !c.fatherId)) return creatureLevels[cId] = 0;
-            const mLevel = getCreatureLevel(c.motherId);
-            const fLevel = getCreatureLevel(c.fatherId);
-            return creatureLevels[cId] = Math.max(mLevel, fLevel) + 1;
+            if (stack.has(cId)) return 0;
+            stack.add(cId);
+            try {
+                const c = type.creatures.find(x => x.id == cId);
+                if (!c || (!c.motherId && !c.fatherId)) return creatureLevels[cId] = 0;
+                const mLevel = getCreatureLevel(c.motherId, stack);
+                const fLevel = getCreatureLevel(c.fatherId, stack);
+                return creatureLevels[cId] = Math.max(mLevel, fLevel) + 1;
+            } finally {
+                stack.delete(cId);
+            }
         }
 
         type.creatures.forEach(c => getCreatureLevel(c.id));
@@ -746,7 +1124,6 @@
             row.innerHTML = `<div class="gen-label">GENERATION ${gen}</div>`;
             
             generations[gen].forEach(c => {
-                const idx = type.creatures.indexOf(c);
                 const lvl = calculateLvl(c.stats, c.muts);
                 const motherName = getCreatureNameById(c.motherId);
                 const fatherName = getCreatureNameById(c.fatherId);
@@ -757,17 +1134,20 @@
 
                 row.innerHTML += `
                     <div class="creature-card" data-id="${c.id}" data-m="${c.motherId || ''}" data-f="${c.fatherId || ''}"
-                         onmouseenter="highlightLineage(this)" onmouseleave="clearLineage()">
+                         onclick="handleCreatureCardClick(event, '${c.id}')"
+                         onmouseenter="previewCreatureLineage('${c.id}')" onmouseleave="clearPreviewCreatureLineage()">
                         <div class="card-actions-vertical">
-                            <button class="card-edit-btn" onclick="openModal(${idx})" title="Edit Creature">
+                            <button class="card-edit-btn" onclick="openModal(${c.id})" title="Edit Creature">
                                 <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                             </button>
                         </div>
-                        <div class="card-gender-strip" style="background:${c.gender === 'M' ? 'var(--male)' : 'var(--female)'}"></div>
+                        <div class="card-gender-strip" style="${getGenderStripStyle(c.gender)}"></div>
                         <span class="card-name"><span class="card-name-text">${c.name}</span>${c.mut ? '<span class="card-mut-badge">MUT</span>' : ''}</span>
                         <div class="card-level-info">LVL ${lvl} <span style="margin: 0 4px; opacity: 0.5;">|</span> MAX ${lvl + 88}</div>
+
                         ${parentsHtml}
                         <div class="card-stats-mini">
+
                             <div class="stat-row"><span class="stat-label">HP</span><span class="card-stat-val">${renderStat(c.stats.hp, c.muts?.hp, c.mut)}</span><span class="stat-label second-col-label">ST</span><span class="card-stat-val">${renderStat(c.stats.st, c.muts?.st, c.mut)}</span></div>
                             <div class="stat-row"><span class="stat-label">OX</span><span class="card-stat-val">${renderStat(c.stats.ox, c.muts?.ox, c.mut)}</span><span class="stat-label second-col-label">FD</span><span class="card-stat-val">${renderStat(c.stats.fd, c.muts?.fd, c.mut)}</span></div>
                             <div class="stat-row"><span class="stat-label">WT</span><span class="card-stat-val">${renderStat(c.stats.wt, c.muts?.wt, c.mut)}</span><span class="stat-label second-col-label">ML</span><span class="card-stat-val">${renderStat(c.stats.ml, c.muts?.ml, c.mut)}</span></div>
@@ -780,6 +1160,65 @@
         setTimeout(drawConnectors, 100); // Даємо час на рендер перед малюванням ліній
     }
 
+    function getActiveCreatureHighlightId() {
+        return selectedCreatureId || previewCreatureId;
+    }
+
+    function applyCreatureHighlightState() {
+        document.querySelectorAll('.creature-card').forEach(card => {
+            card.classList.remove('highlight-mother', 'highlight-father', 'highlight-child', 'is-selected');
+        });
+
+        const activeId = getActiveCreatureHighlightId();
+        if (!activeId) return;
+
+        const selectedCard = document.querySelector(`.creature-card[data-id="${activeId}"]`);
+        if (!selectedCard) return;
+
+        selectedCard.classList.add('is-selected');
+        const mId = selectedCard.dataset.m;
+        const fId = selectedCard.dataset.f;
+
+        document.querySelectorAll('.creature-card').forEach(card => {
+            const cardId = card.dataset.id;
+            const cardMother = card.dataset.m;
+            const cardFather = card.dataset.f;
+
+            if (cardId === mId) card.classList.add('highlight-mother');
+            if (cardId === fId) card.classList.add('highlight-father');
+            if (cardMother === String(activeId) || cardFather === String(activeId)) card.classList.add('highlight-child');
+        });
+    }
+
+    function handleCreatureCardClick(event, creatureId) {
+        if (event.target.closest('button, .action-btn, .card-edit-btn, .parent-link')) return;
+        selectedCreatureId = String(creatureId);
+        previewCreatureId = null;
+        applyCreatureHighlightState();
+        drawConnectors();
+    }
+
+    function previewCreatureLineage(creatureId) {
+        if (selectedCreatureId) return;
+        previewCreatureId = String(creatureId);
+        applyCreatureHighlightState();
+        drawConnectors();
+    }
+
+    function clearPreviewCreatureLineage() {
+        if (selectedCreatureId) return;
+        previewCreatureId = null;
+        applyCreatureHighlightState();
+        drawConnectors();
+    }
+
+    function clearSelectedCreature() {
+        selectedCreatureId = null;
+        previewCreatureId = null;
+        applyCreatureHighlightState();
+        drawConnectors();
+    }
+
     function drawConnectors() {
         const svg = document.getElementById('connectors-svg');
         if (!svg) return;
@@ -787,12 +1226,13 @@
         svg.innerHTML = '';
         const rect = grid.getBoundingClientRect();
         svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+        const activeId = getActiveCreatureHighlightId();
 
         document.querySelectorAll('.creature-card').forEach(child => {
             const cRect = child.getBoundingClientRect();
             const parents = [
-                {id: child.dataset.m, color: 'rgba(245, 61, 134, 0.4)'},
-                {id: child.dataset.f, color: 'rgba(61, 134, 245, 0.4)'}
+                {id: child.dataset.m, color: 'rgba(245, 61, 134, 0.32)', activeColor: 'rgba(245, 61, 134, 0.98)', glow: 'rgba(245, 61, 134, 0.42)'},
+                {id: child.dataset.f, color: 'rgba(61, 134, 245, 0.32)', activeColor: 'rgba(61, 134, 245, 0.98)', glow: 'rgba(61, 134, 245, 0.42)'}
             ];
 
             parents.forEach(p => {
@@ -800,6 +1240,7 @@
                 const parent = document.querySelector(`.creature-card[data-id="${p.id}"]`);
                 if (!parent) return;
                 const pRect = parent.getBoundingClientRect();
+                const isActiveLine = activeId && (String(child.dataset.id) === String(activeId) || String(p.id) === String(activeId));
 
                 const x1 = (pRect.left + pRect.width / 2) - rect.left;
                 const y1 = pRect.bottom - rect.top;
@@ -809,9 +1250,13 @@
                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 const cp = (y2 - y1) / 2;
                 path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${y1 + cp}, ${x2} ${y2 - cp}, ${x2} ${y2}`);
-                path.setAttribute('stroke', p.color);
-                path.setAttribute('stroke-width', '2');
+                path.setAttribute('stroke', isActiveLine ? p.activeColor : p.color);
+                path.setAttribute('stroke-width', isActiveLine ? '4' : '2.5');
+                path.setAttribute('opacity', isActiveLine ? '1' : '0.55');
+                path.setAttribute('stroke-linecap', 'round');
+                path.setAttribute('stroke-linejoin', 'round');
                 path.setAttribute('fill', 'none');
+                path.style.filter = `drop-shadow(0 0 8px ${isActiveLine ? p.glow : 'rgba(255,255,255,0.04)'})`;
                 svg.appendChild(path);
             });
         });
@@ -819,25 +1264,13 @@
 
     // Візуалізація зв'язків
     function highlightLineage(card) {
-        const id = card.dataset.id;
-        const mId = card.dataset.m;
-        const fId = card.dataset.f;
-
-        document.querySelectorAll('.creature-card').forEach(c => {
-            const cId = c.dataset.id;
-            const cM = c.dataset.m;
-            const cF = c.dataset.f;
-
-            if (cId === mId) c.classList.add('highlight-mother');
-            if (cId === fId) c.classList.add('highlight-father');
-            if (cM === id || cF === id) c.classList.add('highlight-child');
-        });
+        if (selectedCreatureId) return;
+        previewCreatureLineage(card.dataset.id);
     }
 
     function clearLineage() {
-        document.querySelectorAll('.creature-card').forEach(c => {
-            c.classList.remove('highlight-mother', 'highlight-father', 'highlight-child');
-        });
+        if (selectedCreatureId) return;
+        clearPreviewCreatureLineage();
     }
 
     function scrollToCreature(id) {
@@ -852,11 +1285,13 @@
     }
 
     function saveCreature() {
-        if (selectedDinoIndex === -1) return;
-        const type = dinoTypes[selectedDinoIndex];
+        const type = getDinoTypeById(selectedDinoId);
+        if (!type) return;
+        const existingCreature = editingCreatureId === null ? null : getCreatureById(type, editingCreatureId);
+        const creatureId = existingCreature ? existingCreature.id : getNextCreatureId(type);
 
         const creature = {
-            id: editingCreatureIdx === -1 ? Date.now() : type.creatures[editingCreatureIdx].id,
+            id: creatureId,
             name: document.getElementById('m-name').value || "Unnamed",
             motherId: document.getElementById('m-mother').value || null,
             fatherId: document.getElementById('m-father').value || null,
@@ -880,10 +1315,12 @@
             }
         };
 
-        if (editingCreatureIdx === -1) {
+        const creatureIndex = editingCreatureId === null ? -1 : type.creatures.findIndex(item => item.id == editingCreatureId);
+
+        if (creatureIndex === -1) {
             type.creatures.push(creature);
         } else {
-            type.creatures[editingCreatureIdx] = creature;
+            type.creatures[creatureIndex] = creature;
         }
         
         saveToStorage();
@@ -925,19 +1362,21 @@
 
     let currentModalFav = false;
 
-    function openTypeModal(idx = -1) {
-        editingIdx = idx;
-        const isEdit = idx !== -1;
+    function openTypeModal(typeId = null) {
+        const editingType = typeId === null ? null : getDinoTypeById(typeId);
+        if (typeId !== null && !editingType) return;
+        editingTypeId = editingType ? editingType.id : null;
+        const isEdit = editingTypeId !== null;
         document.getElementById('typeModalTitle').innerText = isEdit ? "EDIT TYPE NAME" : "NEW DINO TYPE";
         
         // Показуємо кнопку видалення тільки якщо це редагування
         const delBtn = document.getElementById('modalDeleteBtn');
         if (delBtn) delBtn.style.display = isEdit ? 'block' : 'none';
 
-        currentModalFav = isEdit ? dinoTypes[idx].favorite : false;
+        currentModalFav = isEdit ? editingType.favorite : false;
         updateModalFavUI();
 
-        document.getElementById('newTypeName').value = isEdit ? dinoTypes[idx].name : '';
+        document.getElementById('newTypeName').value = isEdit ? editingType.name : '';
         document.getElementById('typeModal').classList.add('active');
         setTimeout(() => document.getElementById('newTypeName').focus(), 100);
     }
@@ -959,14 +1398,17 @@
         const name = nameInput.value.trim();
         
         if (name) {
-            if (editingIdx === -1) {
+            if (editingTypeId === null) {
                 // Створення нового
-                dinoTypes.push({ name: name, favorite: currentModalFav, creatures: [] });
-                selectedDinoIndex = dinoTypes.length - 1;
+                const newType = { id: getNextDinoTypeId(), name: name, favorite: currentModalFav, creatures: [] };
+                dinoTypes.push(newType);
+                selectedDinoId = newType.id;
             } else {
                 // Редагування існуючого
-                dinoTypes[editingIdx].name = name;
-                dinoTypes[editingIdx].favorite = currentModalFav;
+                const editingType = getDinoTypeById(editingTypeId);
+                if (!editingType) return;
+                editingType.name = name;
+                editingType.favorite = currentModalFav;
             }
             saveToStorage();
             renderDinoList();
@@ -975,8 +1417,8 @@
     }
 
     function handleModalDelete() {
-        if (editingIdx !== -1) {
-            confirmDeleteType(editingIdx);
+        if (editingTypeId !== null) {
+            confirmDeleteType(editingTypeId);
             closeTypeModal();
         }
     }
@@ -994,24 +1436,27 @@
 
     function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('active'); }
 
-    function confirmDeleteType(idx) {
-        const name = dinoTypes[idx].name;
+    function confirmDeleteType(typeId) {
+        const type = getDinoTypeById(typeId);
+        if (!type) return;
+        const name = type.name;
         showConfirm(`Delete ${name}?`, () => {
-            const element = document.querySelector(`.dino-item[data-idx="${idx}"]`);
+            const element = document.querySelector(`.dino-item[data-id="${typeId}"]`);
             
             if (element) {
                 element.classList.add('removing');
                 setTimeout(() => {
-                    const actualIdx = dinoTypes.findIndex(t => t.name === name);
+                    const actualIdx = getDinoTypeIndexById(typeId);
                     if (actualIdx !== -1) dinoTypes.splice(actualIdx, 1);
-                    if (selectedDinoIndex === idx) selectedDinoIndex = -1;
+                    if (selectedDinoId == typeId) selectedDinoId = dinoTypes[0]?.id ?? null;
                     saveToStorage();
                     renderDinoList();
                 }, 250);
             } else {
                 // Якщо елемент не знайдено (наприклад, при активному пошуку), видаляємо миттєво
-                dinoTypes.splice(idx, 1);
-                if (selectedDinoIndex === idx) selectedDinoIndex = -1;
+                const actualIdx = getDinoTypeIndexById(typeId);
+                if (actualIdx !== -1) dinoTypes.splice(actualIdx, 1);
+                if (selectedDinoId == typeId) selectedDinoId = dinoTypes[0]?.id ?? null;
                 saveToStorage();
                 renderDinoList();
             }
@@ -1019,22 +1464,24 @@
     }
 
     // МОДАЛКА
-    function openModal(creatureIdx = -1) { 
-        editingCreatureIdx = creatureIdx;
-        const isEdit = creatureIdx !== -1;
+    function openModal(creatureId = null) { 
+        const type = getDinoTypeById(selectedDinoId);
+        if (!type) return;
+        editingCreatureId = creatureId;
+        const isEdit = creatureId !== null;
         
         const modal = document.getElementById('modal');
         const title = modal.querySelector('.modal-header h2');
         title.innerText = isEdit ? "EDIT DINO CARD" : "NEW DINO CARD";
 
         // Оновлення списків батьків
-        const type = dinoTypes[selectedDinoIndex];
         const motherSelect = document.getElementById('m-mother');
         const fatherSelect = document.getElementById('m-father');
         motherSelect.innerHTML = '<option value="">None</option>';
         fatherSelect.innerHTML = '<option value="">None</option>';
 
-        const currentId = isEdit ? type.creatures[creatureIdx].id : null;
+        const currentCreature = isEdit ? getCreatureById(type, creatureId) : null;
+        const currentId = currentCreature ? currentCreature.id : null;
         type.creatures.forEach(cr => {
             if (cr.id === currentId) return; // Не можна бути батьком самому собі
             const opt = `<option value="${cr.id}">${cr.name}</option>`;
@@ -1042,8 +1489,8 @@
             if (cr.gender === 'M') fatherSelect.innerHTML += opt;
         });
 
-        if (isEdit) {
-            const c = type.creatures[creatureIdx];
+        if (currentCreature) {
+            const c = currentCreature;
             document.getElementById('m-name').value = c.name;
             document.getElementById('m-mother').value = c.motherId || '';
             document.getElementById('m-father').value = c.fatherId || '';
@@ -1079,16 +1526,62 @@
     }
 
     function confirmDelete() { 
-        if (editingCreatureIdx === -1) {
+        const type = getDinoTypeById(selectedDinoId);
+        if (!type || editingCreatureId === null) {
             closeModal();
             return;
         }
         showConfirm("Delete this record?", () => {
-            dinoTypes[selectedDinoIndex].creatures.splice(editingCreatureIdx, 1);
+            const creatureIndex = type.creatures.findIndex(creature => creature.id == editingCreatureId);
+            if (creatureIndex !== -1) {
+                type.creatures.splice(creatureIndex, 1);
+            }
             saveToStorage();
             renderCreatures();
             closeModal();
         });
+    }
+
+    function exportData() {
+        const payload = {
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            dinoTypes
+        };
+
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `ark-breeding-export-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    async function importData(event) {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+            const importedTypes = Array.isArray(parsed) ? parsed : parsed?.dinoTypes;
+
+            if (!Array.isArray(importedTypes)) {
+                throw new Error('Invalid data format');
+            }
+
+            dinoTypes = importedTypes.map(normalizeDinoType);
+            selectedDinoId = dinoTypes[0]?.id ?? null;
+            editingTypeId = null;
+            saveToStorage();
+            renderDinoList();
+        } catch (error) {
+            alert('Import failed: invalid JSON or unsupported file structure.');
+        }
     }
 
     // Реєстрація Service Worker для PWA
@@ -1106,6 +1599,8 @@
         if (e.key === 'Escape') closeTypeModal();
     });
 
+    document.getElementById('sidebarImportInput').addEventListener('change', importData);
+
     // Закриття пошуку при кліку поза ним
     document.addEventListener('click', (e) => {
         const bar = document.getElementById('searchBar');
@@ -1114,14 +1609,21 @@
         if (bar.classList.contains('active') && !bar.contains(e.target) && !toggleBtn.contains(e.target)) {
             closeSearch();
         }
+
+        const clickedInsideInteractiveElement = e.target.closest('.creature-card, .modal, button, input, select, textarea, label, a');
+        if (!clickedInsideInteractiveElement) {
+            clearSelectedCreature();
+        }
     });
 
     // СТАРТ
     loadFromStorage();
+    syncMobileLayout();
     renderDinoList();
 
     // Перемальовувати лінії при зміні розміру
     window.addEventListener('resize', drawConnectors);
+    window.addEventListener('resize', syncMobileLayout);
 </script>
 
 </body>
