@@ -2,10 +2,10 @@
   "name": "ARK Breeding Pro",
   "short_name": "ARK Breeding",
   "description": "Professional tool for ARK creature breeding and lineage tracking",
-  "start_url": "./index.html",
-  "display": "standalone",
+  "start_url": "index.html",
+  "display": "fullscreen",
   "background_color": "#0f0f12",
-  "theme_color": "#ffb74d",
+  "theme_color": "#0f0f12",
   "icons": [
     {
       "src": "icon-192.png",
