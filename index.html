@@ -105,45 +105,7 @@
             display: none; /* WebKit (Chrome, Safari, Edge) */
         }
 
-        .sidebar-footer {
-            padding: 0 15px 15px 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
 
-        .sidebar-tool-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        .sidebar-tool-btn {
-            flex: 1;
-            min-height: 42px;
-            border: none;
-            border-radius: 12px;
-            background: var(--input-bg);
-            color: #fff;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s, color 0.2s;
-        }
-
-        .sidebar-tool-btn:hover {
-            transform: translateY(-1px);
-            background: #363640;
-        }
-
-        .sidebar-tool-btn.primary {
-            background: var(--accent);
-            color: #000;
-        }
-
-        .sidebar-tool-btn.primary:hover {
-            background: #ffc96f;
-        }
 
         .sidebar-import-input {
             display: none;
@@ -317,7 +279,7 @@
         }
         .creature-card.highlight-mother {
             border-color: var(--female) !important;
-            box-shadow: 0 0 0 1px rgba(245, 61, 134, 0.9), 0 0 15px rgba(245, 61, 134, 0.35), 0 0 15cqh rgba(245, 61, 134, 0.12);
+            box-shadow: 0 0 0 1px rgba(245, 61, 134, 0.9), 0 0 15px rgba(245, 61, 134, 0.35), 0 0 15px rgba(245, 61, 134, 0.12);
             z-index: 10;
         }
         .creature-card.highlight-father {
@@ -961,7 +923,7 @@
                     Number(stats.fd || 0) + Number(stats.wt || 0) + Number(stats.ml || 0) +
                     Number(m.hp || 0) + Number(m.st || 0) + Number(m.ox || 0) + 
                     Number(m.fd || 0) + Number(m.wt || 0) + Number(m.ml || 0);
-        return sum > 0 ? sum - 1 : 1;
+        return 1 + sum;
     }
 
     const renderStat = (val, mut, isMutated) => {
@@ -1657,27 +1619,7 @@
         }
     }
 
-    function initFullscreen() {
-        const enterFS = () => {
-            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
-                const docEl = document.documentElement;
-                const requestFS = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
-                if (requestFS) {
-                    requestFS.call(docEl).catch(err => {
-                        console.log('Error attempting to enable full-screen mode:', err);
-                    });
-                }
-            }
-            // Видаляємо обробники подій після першої ж взаємодії
-            document.removeEventListener('click', enterFS);
-            document.removeEventListener('keydown', enterFS);
-            document.removeEventListener('touchstart', enterFS);
-        };
 
-        document.addEventListener('click', enterFS);
-        document.addEventListener('keydown', enterFS);
-        document.addEventListener('touchstart', enterFS);
-    }
 
     document.addEventListener('fullscreenchange', updateFullscreenButton);
     document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
@@ -1688,7 +1630,6 @@
     loadFromStorage();
     syncMobileLayout();
     renderDinoList();
-    initFullscreen();
 
     // Перемальовувати лінії при зміні розміру
     window.addEventListener('resize', drawConnectors);
